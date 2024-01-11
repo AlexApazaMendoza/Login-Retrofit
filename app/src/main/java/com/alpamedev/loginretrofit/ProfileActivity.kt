@@ -3,12 +3,17 @@ package com.alpamedev.loginretrofit
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.alpamedev.loginretrofit.databinding.ActivityProfileBinding
-import com.android.volley.toolbox.JsonObjectRequest
+import com.alpamedev.loginretrofit.retrofit.RetrofitConfig
+import com.alpamedev.loginretrofit.retrofit.User
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.snackbar.Snackbar
-import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -24,36 +29,32 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun loadUserProfile() {
-        val url = Constants.BASE_URL + Constants.API_PATH + Constants.USERS_PATH + Constants.TWO_PATH
-
-        val jsonObjectRequest = object : JsonObjectRequest(Method.GET, url, null, { response ->
-            Log.i("response", response.toString())
-            val gson = Gson()
-
-            val userJson = response.optJSONObject(Constants.DATA_PROPERTY)?.toString()
-            val user: User = gson.fromJson(userJson, User::class.java)
-
-            val supportJson = response.optJSONObject(Constants.SUPPORT_PROPERTY)?.toString()
-            val support: Support = gson.fromJson(supportJson, Support::class.java)
-
-            updateUI(user, support)
-        }, {
-            it.printStackTrace()
-            if (it.networkResponse != null && it.networkResponse.statusCode == 400){
-                showMessage(getString(R.string.main_error_server))
-            }
-        }){
-            override fun getHeaders(): MutableMap<String, String> {
-                val params = HashMap<String, String>()
-
-                params["Content-Type"] = "application/json"
-                return params
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = RetrofitConfig.userService.getUser()
+                Log.i("response", response.toString())
+                updateUI(response.data, response.support)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                showMessage(getMessageByException(e))
             }
         }
-
-        LoginApplication.reqResAPI.addToRequestQueue(jsonObjectRequest)
     }
-    private fun updateUI(user: User, support: Support) {
+
+    private fun getMessageByException(e: Exception): String {
+        return when (e) {
+            is HttpException -> {
+                if (e.code() == 404) {
+                    getString(R.string.main_error_user_not_found)
+                } else {
+                    getString(R.string.main_error_response)
+                }
+            }
+            else -> getString(R.string.main_error_response)
+        }
+    }
+
+    private suspend fun updateUI(user: User, support: Support) = withContext(Dispatchers.Main) {
         with(mBinding) {
             tvFullName.text = user.getFullName()
             tvEmail.text = user.email
@@ -70,7 +71,7 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
-    private fun showMessage(message: String){
+    private suspend fun showMessage(message: String) = withContext(Dispatchers.Main) {
         Snackbar.make(mBinding.root, message, Snackbar.LENGTH_SHORT).show()
     }
 }

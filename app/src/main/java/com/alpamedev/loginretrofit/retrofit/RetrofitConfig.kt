@@ -13,4 +13,5 @@ object RetrofitConfig {
 
     var loginService: LoginService = retrofit.create(LoginService::class.java)
     val registerService: RegisterService = retrofit.create(RegisterService::class.java)
+    val userService: UserService = retrofit.create(UserService::class.java)
 }

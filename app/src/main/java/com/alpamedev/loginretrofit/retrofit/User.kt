@@ -1,4 +1,4 @@
-package com.alpamedev.loginretrofit
+package com.alpamedev.loginretrofit.retrofit
 
 data class User(
     val id: Long,
