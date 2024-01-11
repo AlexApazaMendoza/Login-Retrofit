@@ -14,6 +14,7 @@ import com.alpamedev.loginretrofit.retrofit.RetrofitConfig
 import com.alpamedev.loginretrofit.retrofit.UserRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.HttpException
@@ -60,15 +61,7 @@ class MainActivity : AppCompatActivity() {
                     updateUI(result)
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    (e as? HttpException)?.let {
-                        if (it.code() == 400) {
-                            updateUI(getString(R.string.main_error_server))
-                        } else {
-                            updateUI(getString(R.string.main_error_response))
-                        }
-                    } ?: run {
-                        updateUI(getString(R.string.main_error_response))
-                    }
+                    updateUI(getMessageByException(e))
                 }
             } else {
                 try {
@@ -80,21 +73,26 @@ class MainActivity : AppCompatActivity() {
                     updateUI(result)
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    (e as? HttpException)?.let {
-                        if (it.code() == 400) {
-                            updateUI(getString(R.string.main_error_server))
-                        } else {
-                            updateUI(getString(R.string.main_error_response))
-                        }
-                    } ?: run {
-                        updateUI(getString(R.string.main_error_response))
-                    }
+                    updateUI(getMessageByException(e))
                 }
             }
         }
     }
 
-    private fun updateUI(result: String) {
+    private fun getMessageByException(e: Exception): String {
+        return when (e) {
+            is HttpException -> {
+                if (e.code() == 400) {
+                    getString(R.string.main_error_server)
+                } else {
+                    getString(R.string.main_error_response)
+                }
+            }
+            else -> getString(R.string.main_error_response)
+        }
+    }
+
+    private suspend fun updateUI(result: String) = withContext(Dispatchers.Main) {
         mBinding.tvResult.visibility = View.VISIBLE
         mBinding.tvResult.text = result
     }
