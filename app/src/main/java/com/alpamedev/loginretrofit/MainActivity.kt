@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         mBinding.btnLogin.setOnClickListener {
-            login()
+            loginOrRegister()
         }
 
         mBinding.btnProfile.setOnClickListener {
@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun login() {
+    private fun loginOrRegister() {
         val userRequest = UserRequest(
             mBinding.etEmail.text.toString().trim(),
             mBinding.etPassword.text.toString().trim()

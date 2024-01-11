@@ -14,8 +14,6 @@ object Constants {
 
     const val ID_PROPERTY = "id"
     const val TOKEN_PROPERTY = "token"
-    const val DATA_PROPERTY = "data"
-    const val SUPPORT_PROPERTY = "support"
 
     const val ERROR_VALUE = "fail"
 }
