@@ -6,8 +6,13 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.alpamedev.loginretrofit.databinding.ActivityMainBinding
-import com.android.volley.toolbox.JsonObjectRequest
-import org.json.JSONObject
+import com.alpamedev.loginretrofit.retrofit.LoginResponse
+import com.alpamedev.loginretrofit.retrofit.RegisterResponse
+import com.alpamedev.loginretrofit.retrofit.RetrofitConfig
+import com.alpamedev.loginretrofit.retrofit.UserRequest
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
     private val mBinding: ActivityMainBinding by lazy {
@@ -35,46 +40,68 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun login() {
-        val typeMethod = if (mBinding.swType.isChecked) Constants.LOGIN_PATH else Constants.REGISTER_PATH
+        val userRequest = UserRequest(
+            mBinding.etEmail.text.toString().trim(),
+            mBinding.etPassword.text.toString().trim()
+        )
 
-        val url = Constants.BASE_URL + Constants.API_PATH + typeMethod
+        if (mBinding.swType.isChecked) {
+            RetrofitConfig.loginService.login(userRequest).enqueue(object: Callback<LoginResponse> {
+                override fun onResponse(
+                    call: Call<LoginResponse>,
+                    response: Response<LoginResponse>
+                ) {
+                    when (response.code()) {
+                        200 -> {
+                            Log.i("response", response.toString())
+                            val token = response.body()?.token ?: Constants.ERROR_VALUE
+                            val result = "${Constants.TOKEN_PROPERTY}: $token"
+                            updateUI(result)
+                        }
+                        400 -> {
+                            updateUI(getString(R.string.main_error_server))
+                        }
+                        else -> {
+                            updateUI(getString(R.string.main_error_response))
+                        }
+                    }
+                }
 
-        val email = mBinding.etEmail.text.toString().trim()
-        val password = mBinding.etPassword.text.toString().trim()
+                override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                    t.printStackTrace()
+                    updateUI(getString(R.string.main_error_response))
+                }
+            })
 
-        val jsonParams = JSONObject()
-        if (email.isNotEmpty()){
-            jsonParams.put(Constants.EMAIL_PARAM, email)
+        } else {
+            RetrofitConfig.registerService.register(userRequest).enqueue(object: Callback<RegisterResponse> {
+                override fun onResponse(
+                    call: Call<RegisterResponse>,
+                    response: Response<RegisterResponse>
+                ) {
+                    when (response.code()) {
+                        200 -> {
+                            Log.i("response", response.toString())
+                            val id = response.body()?.id ?: Constants.ERROR_VALUE
+                            val token = response.body()?.token ?: Constants.ERROR_VALUE
+                            val result = "${Constants.ID_PROPERTY}: $id, ${Constants.TOKEN_PROPERTY}: $token"
+                            updateUI(result)
+                        }
+                        400 -> {
+                            updateUI(getString(R.string.main_error_server))
+                        }
+                        else -> {
+                            updateUI(getString(R.string.main_error_response))
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
+                    t.printStackTrace()
+                    updateUI(getString(R.string.main_error_response))
+                }
+            })
         }
-        if (password.isNotEmpty()){
-            jsonParams.put(Constants.PASSWORD_PARAM, password)
-        }
-
-        val jsonObjectRequest = object : JsonObjectRequest(Method.POST, url, jsonParams, { response ->
-            Log.i("response", response.toString())
-
-            val id = response.optString(Constants.ID_PROPERTY, Constants.ERROR_VALUE)
-            val token = response.optString(Constants.TOKEN_PROPERTY, Constants.ERROR_VALUE)
-
-            val result = if (id.equals(Constants.ERROR_VALUE)) "${Constants.TOKEN_PROPERTY}: $token"
-            else "${Constants.ID_PROPERTY}: $id, ${Constants.TOKEN_PROPERTY}: $token"
-
-            updateUI(result)
-        }, {
-            it.printStackTrace()
-            if (it.networkResponse.statusCode == 400){
-                updateUI(getString(R.string.main_error_server))
-            }
-        }){
-            override fun getHeaders(): MutableMap<String, String> {
-                val params = HashMap<String, String>()
-
-                params["Content-Type"] = "application/json"
-                return params
-            }
-        }
-
-        LoginApplication.reqResAPI.addToRequestQueue(jsonObjectRequest)
     }
 
     private fun updateUI(result: String) {

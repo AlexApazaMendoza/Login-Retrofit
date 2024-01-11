@@ -9,6 +9,7 @@
     <string name="main_type_register">Register</string>
     <string name="main_type_login">Login</string>
     <string name="main_error_server">Error en la petición</string>
+    <string name="main_error_response">Error en la respuesta</string>
     <string name="main_profile">Profile</string>
 
     <string name="profile_title">User Profile</string>
