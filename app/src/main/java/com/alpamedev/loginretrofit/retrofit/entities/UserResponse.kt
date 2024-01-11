@@ -1,4 +1,4 @@
-package com.alpamedev.loginretrofit.retrofit
+package com.alpamedev.loginretrofit.retrofit.entities
 
 import com.alpamedev.loginretrofit.Support
 

@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.alpamedev.loginretrofit.databinding.ActivityProfileBinding
 import com.alpamedev.loginretrofit.retrofit.RetrofitConfig
-import com.alpamedev.loginretrofit.retrofit.User
+import com.alpamedev.loginretrofit.retrofit.entities.User
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.snackbar.Snackbar

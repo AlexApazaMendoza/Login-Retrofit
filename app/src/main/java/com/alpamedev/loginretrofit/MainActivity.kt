@@ -1,24 +1,18 @@
 package com.alpamedev.loginretrofit
 
 import android.content.Intent
-import android.net.http.NetworkException
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.alpamedev.loginretrofit.databinding.ActivityMainBinding
-import com.alpamedev.loginretrofit.retrofit.LoginResponse
-import com.alpamedev.loginretrofit.retrofit.RegisterResponse
 import com.alpamedev.loginretrofit.retrofit.RetrofitConfig
-import com.alpamedev.loginretrofit.retrofit.UserRequest
+import com.alpamedev.loginretrofit.retrofit.entities.UserRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.HttpException
-import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
     private val mBinding: ActivityMainBinding by lazy {

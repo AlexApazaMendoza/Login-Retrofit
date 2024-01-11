@@ -1,6 +1,7 @@
-package com.alpamedev.loginretrofit.retrofit
+package com.alpamedev.loginretrofit.retrofit.service
 
 import com.alpamedev.loginretrofit.Constants
+import com.alpamedev.loginretrofit.retrofit.entities.UserResponse
 import retrofit2.http.GET
 import retrofit2.http.Headers
 

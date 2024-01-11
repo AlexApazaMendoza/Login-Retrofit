@@ -1,6 +1,9 @@
 package com.alpamedev.loginretrofit.retrofit
 
 import com.alpamedev.loginretrofit.Constants
+import com.alpamedev.loginretrofit.retrofit.service.LoginService
+import com.alpamedev.loginretrofit.retrofit.service.RegisterService
+import com.alpamedev.loginretrofit.retrofit.service.UserService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

@@ -1,4 +1,4 @@
-package com.alpamedev.loginretrofit.retrofit
+package com.alpamedev.loginretrofit.retrofit.entities
 
 data class LoginResponse(
     override val token: String
