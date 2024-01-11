@@ -1,17 +1,22 @@
 package com.alpamedev.loginretrofit
 
 import android.content.Intent
+import android.net.http.NetworkException
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.alpamedev.loginretrofit.databinding.ActivityMainBinding
 import com.alpamedev.loginretrofit.retrofit.LoginResponse
 import com.alpamedev.loginretrofit.retrofit.RegisterResponse
 import com.alpamedev.loginretrofit.retrofit.RetrofitConfig
 import com.alpamedev.loginretrofit.retrofit.UserRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
+import retrofit2.HttpException
 import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
@@ -45,62 +50,47 @@ class MainActivity : AppCompatActivity() {
             mBinding.etPassword.text.toString().trim()
         )
 
-        if (mBinding.swType.isChecked) {
-            RetrofitConfig.loginService.login(userRequest).enqueue(object: Callback<LoginResponse> {
-                override fun onResponse(
-                    call: Call<LoginResponse>,
-                    response: Response<LoginResponse>
-                ) {
-                    when (response.code()) {
-                        200 -> {
-                            Log.i("response", response.toString())
-                            val token = response.body()?.token ?: Constants.ERROR_VALUE
-                            val result = "${Constants.TOKEN_PROPERTY}: $token"
-                            updateUI(result)
-                        }
-                        400 -> {
+        lifecycleScope.launch(Dispatchers.IO) {
+            if (mBinding.swType.isChecked) {
+                try {
+                    val response = RetrofitConfig.loginService.login(userRequest)
+                    Log.i("response", response.toString())
+                    val token = response.token ?: Constants.ERROR_VALUE
+                    val result = "${Constants.TOKEN_PROPERTY}: $token"
+                    updateUI(result)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    (e as? HttpException)?.let {
+                        if (it.code() == 400) {
                             updateUI(getString(R.string.main_error_server))
-                        }
-                        else -> {
+                        } else {
                             updateUI(getString(R.string.main_error_response))
                         }
+                    } ?: run {
+                        updateUI(getString(R.string.main_error_response))
                     }
                 }
-
-                override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                    t.printStackTrace()
-                    updateUI(getString(R.string.main_error_response))
-                }
-            })
-
-        } else {
-            RetrofitConfig.registerService.register(userRequest).enqueue(object: Callback<RegisterResponse> {
-                override fun onResponse(
-                    call: Call<RegisterResponse>,
-                    response: Response<RegisterResponse>
-                ) {
-                    when (response.code()) {
-                        200 -> {
-                            Log.i("response", response.toString())
-                            val id = response.body()?.id ?: Constants.ERROR_VALUE
-                            val token = response.body()?.token ?: Constants.ERROR_VALUE
-                            val result = "${Constants.ID_PROPERTY}: $id, ${Constants.TOKEN_PROPERTY}: $token"
-                            updateUI(result)
-                        }
-                        400 -> {
+            } else {
+                try {
+                    val response = RetrofitConfig.registerService.register(userRequest)
+                    Log.i("response", response.toString())
+                    val id = response.id ?: Constants.ERROR_VALUE
+                    val token = response.token ?: Constants.ERROR_VALUE
+                    val result = "${Constants.ID_PROPERTY}: $id, ${Constants.TOKEN_PROPERTY}: $token"
+                    updateUI(result)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    (e as? HttpException)?.let {
+                        if (it.code() == 400) {
                             updateUI(getString(R.string.main_error_server))
-                        }
-                        else -> {
+                        } else {
                             updateUI(getString(R.string.main_error_response))
                         }
+                    } ?: run {
+                        updateUI(getString(R.string.main_error_response))
                     }
                 }
-
-                override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
-                    t.printStackTrace()
-                    updateUI(getString(R.string.main_error_response))
-                }
-            })
+            }
         }
     }
 
